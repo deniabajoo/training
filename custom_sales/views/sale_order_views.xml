@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- 
+    CONTOH CASE: Menambahkan field custom ke Sales Order Form View
+    ===============================================================
+    Field yang ditambahkan:
+    1. customer_po_date - di section informasi order
+    2. custom_discount_percent - di section pricing
+    3. total_after_custom_discount - di section total
+    4. custom_internal_note - di tab/notebook
+    -->
+    
+    <!-- Form View: Menambahkan field di header/informasi order -->
+    <record id="view_order_form_inherit_custom_sales_header" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.custom.sales.header</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Menambahkan Tanggal PO Customer setelah client_order_ref -->
+            <xpath expr="//field[@name='client_order_ref']" position="after">
+                <field name="customer_po_date"/>
+            </xpath>
+            
+            <!-- Menambahkan button untuk apply diskon custom -->
+            <xpath expr="//button[@name='action_confirm']" position="before">
+                <button name="action_apply_custom_discount" 
+                        string="Terapkan Diskon Custom" 
+                        type="object" 
+                        class="btn-secondary"
+                        invisible="state != 'draft'"/>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Form View: Menambahkan field diskon di section pricing -->
+    <record id="view_order_form_inherit_custom_sales_pricing" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.custom.sales.pricing</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Menambahkan field diskon custom setelah tax_totals di dalam group yang sama -->
+            <xpath expr="//group[@name='sale_total']" position="inside">
+                <div class="d-flex justify-content-end align-items-center gap-2">
+                    <label for="custom_discount_percent" string="Diskon Custom:"/>
+                    <field name="custom_discount_percent" widget="percentage" nolabel="1" class="oe_inline"/>
+                </div>
+                <div class="d-flex justify-content-end align-items-center gap-2">
+                    <label for="total_after_custom_discount" string="Total Setelah Diskon Custom:"/>
+                    <field name="total_after_custom_discount" readonly="1" nolabel="1" class="oe_inline"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Form View: Menambahkan tab catatan internal -->
+    <record id="view_order_form_inherit_custom_sales_note" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.custom.sales.note</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Menambahkan field catatan internal di notebook, biasanya setelah tab Notes -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Catatan Custom" name="custom_notes" groups="base.group_user">
+                    <group>
+                        <field name="custom_internal_note" placeholder="Tambahkan catatan internal khusus di sini..."/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Tree View: Menambahkan field di list view -->
+    <record id="view_order_tree_inherit_custom_sales" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit.custom.sales</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <!-- Menambahkan field Tanggal PO Customer dan Total Setelah Diskon -->
+            <xpath expr="//field[@name='date_order']" position="after">
+                <field name="customer_po_date" optional="hide"/>
+            </xpath>
+            <xpath expr="//field[@name='amount_total']" position="after">
+                <field name="total_after_custom_discount" optional="hide" sum="Total Setelah Diskon"/>
+            </xpath>
+        </field>
+    </record>
+    
+</odoo>
+
